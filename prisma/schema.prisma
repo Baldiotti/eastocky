@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Category {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  Transaction Transaction[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Goals {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  goal         Float         @db.Real
+  currentValue Float         @default(0) @db.Real
+  initialDate  DateTime      @default(now()) @db.Date
+  deadline     DateTime      @db.Date
+  endDate      DateTime?     @db.Date
+  userId       String        @db.Uuid
+  User         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Transaction  Transaction[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Investment {
+  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  buyDate            DateTime         @default(now()) @db.Date
+  sellDate           DateTime         @db.Date
+  buyPrice           Float            @db.Real
+  sellPrice          Float            @db.Real
+  stock              String
+  category           String
+  investmentWalletId String           @db.Uuid
+  walletId           String           @db.Uuid
+  InvestmentWallet   InvestmentWallet @relation(fields: [investmentWalletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Wallet             Wallet           @relation(fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model InvestmentWallet {
+  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  balance    Float?           @default(0) @db.Real
+  userId     String           @db.Uuid
+  region     RegionInvestment @default(USA)
+  Investment Investment[]
+  User       User             @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Transaction {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description         String?
+  date                DateTime        @default(now()) @db.Date
+  value               Float           @default(0) @db.Real
+  walletId            String          @db.Uuid
+  categoryId          String?         @db.Uuid
+  destinationWalletId String?         @db.Uuid
+  goalId              String?         @db.Uuid
+  type                TransactionType @default(EXPENSE)
+  Category            Category?       @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  DestinationWallet   Wallet?         @relation("DestinationWallet", fields: [destinationWalletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Goals               Goals?          @relation(fields: [goalId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Wallet              Wallet          @relation(fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model User {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  Goals            Goals[]
+  InvestmentWallet InvestmentWallet[]
+  Wallet           Wallet[]
+
+  @@map("user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Wallet {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  bankName            String?
+  balance             Float?        @default(0) @db.Real
+  userId              String        @db.Uuid
+  Investment          Investment[]
+  WalletDestinationId Transaction[] @relation("DestinationWallet")
+  Transactions        Transaction[]
+  User                User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum RegionInvestment {
+  USA
+  BRASIL
+}
+
+enum TransactionType {
+  EXPENSE
+  TRANSFER
+  GOAL
+}
