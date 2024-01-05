@@ -11,7 +11,7 @@ datasource db {
 model Category {
   id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
-  Transaction Transaction[]
+  transaction Transaction[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -24,8 +24,8 @@ model Goals {
   deadline     DateTime      @db.Date
   endDate      DateTime?     @db.Date
   userId       String        @db.Uuid
+  transaction  Transaction[]
   User         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Transaction  Transaction[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -50,7 +50,7 @@ model InvestmentWallet {
   balance    Float?           @default(0) @db.Real
   userId     String           @db.Uuid
   region     RegionInvestment @default(USA)
-  Investment Investment[]
+  investment Investment[]
   User       User             @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
@@ -75,9 +75,9 @@ model Transaction {
 model User {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name             String
-  Goals            Goals[]
-  InvestmentWallet InvestmentWallet[]
-  Wallet           Wallet[]
+  goals            Goals[]
+  investmentWallet InvestmentWallet[]
+  wallet           Wallet[]
 
   @@map("user")
 }
@@ -89,9 +89,9 @@ model Wallet {
   bankName            String?
   balance             Float?        @default(0) @db.Real
   userId              String        @db.Uuid
-  Investment          Investment[]
+  investment          Investment[]
+  transactions        Transaction[]
   WalletDestinationId Transaction[] @relation("DestinationWallet")
-  Transactions        Transaction[]
   User                User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
