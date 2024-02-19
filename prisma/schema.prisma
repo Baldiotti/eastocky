@@ -3,18 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Category {
   id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
-  transaction Transaction[]
+  isActive    Boolean       @default(true)
+  Transaction Transaction[]
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Goals {
   id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name         String
@@ -23,76 +23,77 @@ model Goals {
   initialDate  DateTime      @default(now()) @db.Date
   deadline     DateTime      @db.Date
   endDate      DateTime?     @db.Date
-  userId       String        @db.Uuid
-  transaction  Transaction[]
-  User         User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profileId    String        @db.Uuid
+  Profile      Profile       @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Transaction  Transaction[]
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Investment {
-  id                 String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  buyDate            DateTime         @default(now()) @db.Date
-  sellDate           DateTime         @db.Date
-  buyPrice           Float            @db.Real
-  sellPrice          Float            @db.Real
-  stock              String
-  category           String
-  investmentWalletId String           @db.Uuid
-  walletId           String           @db.Uuid
-  InvestmentWallet   InvestmentWallet @relation(fields: [investmentWalletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Wallet             Wallet           @relation(fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                   String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stock                String
+  walletId             String                  @db.Uuid
+  investmentDate       DateTime                @default(now()) @db.Date
+  price                Float                   @db.Real
+  quantity             Float                   @default(1)
+  relationInvestmentId String?                 @db.Uuid
+  remainQuantity       Float
+  type                 OperationInvestmentType
+  category             InvestmentCategory
+  Investment           Investment?             @relation("InvestmentToInvestment", fields: [relationInvestmentId], references: [id], onDelete: Restrict)
+  relatedInvestments     Investment[]            @relation("InvestmentToInvestment")
+  Wallet               Wallet                  @relation(fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model InvestmentWallet {
-  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String
-  balance    Float?           @default(0) @db.Real
-  userId     String           @db.Uuid
-  region     RegionInvestment @default(USA)
-  investment Investment[]
-  User       User             @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Transaction {
-  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  description         String?
-  date                DateTime        @default(now()) @db.Date
-  value               Float           @default(0) @db.Real
-  walletId            String          @db.Uuid
-  categoryId          String?         @db.Uuid
-  destinationWalletId String?         @db.Uuid
-  goalId              String?         @db.Uuid
-  type                TransactionType @default(EXPENSE)
-  Category            Category?       @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  DestinationWallet   Wallet?         @relation("DestinationWallet", fields: [destinationWalletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Goals               Goals?          @relation(fields: [goalId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  Wallet              Wallet          @relation(fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                                             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description                                    String?
+  date                                           DateTime        @default(now()) @db.Date
+  value                                          Float           @default(0) @db.Real
+  walletId                                       String          @db.Uuid
+  categoryId                                     String?         @db.Uuid
+  destinationWalletId                            String?         @db.Uuid
+  goalId                                         String?         @db.Uuid
+  type                                           TransactionType @default(EXPENSE)
+  Category                                       Category?       @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Wallet_Transaction_destinationWalletIdToWallet Wallet?         @relation("Transaction_destinationWalletIdToWallet", fields: [destinationWalletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Goals                                          Goals?          @relation(fields: [goalId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Wallet_Transaction_walletIdToWallet            Wallet          @relation("Transaction_walletIdToWallet", fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model User {
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String
-  goals            Goals[]
-  investmentWallet InvestmentWallet[]
-  wallet           Wallet[]
+model Profile {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  avatar_url String?
+  full_name  String
+  username   String   @unique
+  goals      Goals[]
+  wallet     Wallet[]
 
-  @@map("user")
+  @@map("profile")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Wallet {
-  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String
-  bankName            String?
-  balance             Float?        @default(0) @db.Real
-  userId              String        @db.Uuid
-  investment          Investment[]
-  transactions        Transaction[]
-  WalletDestinationId Transaction[] @relation("DestinationWallet")
-  User                User          @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                                                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                                                String
+  balance                                             Float            @default(0) @db.Real
+  region                                              RegionInvestment @default(USA)
+  walletType                                          WalletType       @default(REGULAR)
+  profileId                                           String           @db.Uuid
+  Investment                                          Investment[]
+  Transaction_Transaction_destinationWalletIdToWallet Transaction[]    @relation("Transaction_destinationWalletIdToWallet")
+  Transaction_Transaction_walletIdToWallet            Transaction[]    @relation("Transaction_walletIdToWallet")
+  Profile                                             Profile          @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER
+  GOAL
+}
+
+enum WalletType {
+  REGULAR
+  INVESTMENT
 }
 
 enum RegionInvestment {
@@ -100,8 +101,15 @@ enum RegionInvestment {
   BRASIL
 }
 
-enum TransactionType {
-  EXPENSE
-  TRANSFER
-  GOAL
+enum OperationInvestmentType {
+  BUY
+  SELL
+}
+
+enum InvestmentCategory {
+  ACAO
+  FII
+  BDR
+  CRYPTO
+  STOCK
 }

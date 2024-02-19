@@ -34,7 +34,7 @@ const Goals = {
 					initialDate: args.initialDate,
 					deadline: args.deadline,
 					endDate: args.endDate,
-					userId: args.userId,
+					profileId: args.profileId,
 				},
 			});
 		},

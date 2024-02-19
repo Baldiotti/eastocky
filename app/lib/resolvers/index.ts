@@ -1,16 +1,27 @@
-import InvestmentWallet from "./InvestmentWallet";
+import Category from "./Category";
+import Goals from "./Goals";
+import Transaction from "./Transaction";
+import Wallet from "./Wallet";
 // import other resolvers...
 
 const resolvers = {
 	Query: {
-		...InvestmentWallet.Query,
+		...Category.Query,
+		...Goals.Query,
+		...Transaction.Query,
+		...Wallet.Query,
 		// spread other query resolvers...
 	},
 	Mutation: {
-		...InvestmentWallet.Mutation,
+		...Category.Mutation,
+		...Goals.Mutation,
+		...Transaction.Mutation,
+		...Wallet.Mutation,
 		// spread other mutation resolvers...
 	},
-  ...InvestmentWallet.Object,
+	...Category.Object,
+	...Goals.Object,
+	...Wallet.Object,
 };
 
 export default resolvers;

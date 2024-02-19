@@ -41,7 +41,7 @@ const Wallet = {
 				data: {
 					name: args.name,
 					balance: args.balance,
-					userId: args.userId,
+					profileId: args.profileId,
 				},
 			});
 		},

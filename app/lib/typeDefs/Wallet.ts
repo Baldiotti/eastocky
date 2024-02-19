@@ -3,7 +3,7 @@ const Wallet = `#graphql
     id: ID!
     name: String!
     balance: Float
-    userId: ID!
+    profileId: ID!
     investments: [Investment]!
     transactions: [Transaction]!
   }
@@ -17,7 +17,7 @@ const Wallet = `#graphql
     createWallet(
       name: String!
       balance: Float
-      userId: ID!
+      profileId: ID!
     ): Wallet
     updateWallet(
       id: ID!

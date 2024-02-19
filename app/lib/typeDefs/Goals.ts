@@ -7,7 +7,7 @@ const Goals = `#graphql
 		initialDate: String
 		deadline: String!
 		endDate: String
-		userId: ID!
+		profileId: ID!
 		transaction: [Transaction]
   }
 
@@ -24,7 +24,7 @@ const Goals = `#graphql
 			initialDate: String
 			deadline: String!
 			endDate: String
-			userId: String!
+			profileId: String!
 		): Goals
 		updateGoal(
       id: ID!
