@@ -15,13 +15,6 @@ const Wallet = {
 	},
 	Object: {
 		Wallet: {
-			investments: async (parent: any, _args: any, context: Context) => {
-				return await context.prisma.investment.findMany({
-					where: {
-						walletId: parent.id,
-					},
-				});
-			},
 			transactions: async (parent: any, _args: any, context: Context) => {
 				return await context.prisma.transaction.findMany({
 					where: {

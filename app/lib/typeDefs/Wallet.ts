@@ -4,7 +4,6 @@ const Wallet = `#graphql
     name: String!
     balance: Float
     profileId: ID!
-    investments: [Investment]!
     transactions: [Transaction]!
   }
 

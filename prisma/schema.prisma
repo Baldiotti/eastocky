@@ -28,21 +28,6 @@ model Goals {
   Transaction  Transaction[]
 }
 
-model Investment {
-  id                   String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  stock                String
-  walletId             String                  @db.Uuid
-  investmentDate       DateTime                @default(now()) @db.Date
-  price                Float                   @db.Real
-  quantity             Float                   @default(1)
-  relationInvestmentId String?                 @db.Uuid
-  remainQuantity       Float
-  type                 OperationInvestmentType
-  category             InvestmentCategory
-  Investment           Investment?             @relation("InvestmentToInvestment", fields: [relationInvestmentId], references: [id], onDelete: Restrict)
-  relatedInvestments     Investment[]            @relation("InvestmentToInvestment")
-  Wallet               Wallet                  @relation(fields: [walletId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
 
 model Transaction {
   id                                             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -75,10 +60,7 @@ model Wallet {
   id                                                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                                                String
   balance                                             Float            @default(0) @db.Real
-  region                                              RegionInvestment @default(USA)
-  walletType                                          WalletType       @default(REGULAR)
   profileId                                           String           @db.Uuid
-  Investment                                          Investment[]
   Transaction_Transaction_destinationWalletIdToWallet Transaction[]    @relation("Transaction_destinationWalletIdToWallet")
   Transaction_Transaction_walletIdToWallet            Transaction[]    @relation("Transaction_walletIdToWallet")
   Profile                                             Profile          @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -89,27 +71,4 @@ enum TransactionType {
   INCOME
   TRANSFER
   GOAL
-}
-
-enum WalletType {
-  REGULAR
-  INVESTMENT
-}
-
-enum RegionInvestment {
-  USA
-  BRASIL
-}
-
-enum OperationInvestmentType {
-  BUY
-  SELL
-}
-
-enum InvestmentCategory {
-  ACAO
-  FII
-  BDR
-  CRYPTO
-  STOCK
 }
